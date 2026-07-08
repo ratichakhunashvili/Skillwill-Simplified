@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PeopleRouteImport } from './routes/people'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
 const PeopleRoute = PeopleRouteImport.update({
   id: '/people',
@@ -23,39 +22,31 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PeopleIdRoute = PeopleIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => PeopleRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/people': typeof PeopleRouteWithChildren
-  '/people/$id': typeof PeopleIdRoute
+  '/people': typeof PeopleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/people': typeof PeopleRouteWithChildren
-  '/people/$id': typeof PeopleIdRoute
+  '/people': typeof PeopleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/people': typeof PeopleRouteWithChildren
-  '/people/$id': typeof PeopleIdRoute
+  '/people': typeof PeopleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/people' | '/people/$id'
+  fullPaths: '/' | '/people'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/people' | '/people/$id'
-  id: '__root__' | '/' | '/people' | '/people/$id'
+  to: '/' | '/people'
+  id: '__root__' | '/' | '/people'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PeopleRoute: typeof PeopleRouteWithChildren
+  PeopleRoute: typeof PeopleRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -74,30 +65,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/people/$id': {
-      id: '/people/$id'
-      path: '/$id'
-      fullPath: '/people/$id'
-      preLoaderRoute: typeof PeopleIdRouteImport
-      parentRoute: typeof PeopleRoute
-    }
   }
 }
 
-interface PeopleRouteChildren {
-  PeopleIdRoute: typeof PeopleIdRoute
-}
-
-const PeopleRouteChildren: PeopleRouteChildren = {
-  PeopleIdRoute: PeopleIdRoute,
-}
-
-const PeopleRouteWithChildren =
-  PeopleRoute._addFileChildren(PeopleRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PeopleRoute: PeopleRouteWithChildren,
+  PeopleRoute: PeopleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

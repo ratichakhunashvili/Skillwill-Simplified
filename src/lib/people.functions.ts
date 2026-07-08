@@ -18,7 +18,7 @@ function serverClient() {
 }
 
 const BUCKET = "people-photos";
-const SIGN_TTL = 60 * 60; // 1 hour
+const SIGN_TTL = 60 * 60 * 24 * 365; // 1 year
 
 export type PersonDTO = {
   id: string;
@@ -26,6 +26,8 @@ export type PersonDTO = {
   lastName: string;
   email: string | null;
   photoUrl: string;
+  downloadUrl: string;
+  photoPath: string;
   createdAt: string;
 };
 
@@ -38,6 +40,24 @@ async function signPhoto(
     .createSignedUrl(path, SIGN_TTL);
   if (error || !data) return "";
   return data.signedUrl;
+}
+
+async function signDownload(
+  supabase: ReturnType<typeof serverClient>,
+  path: string,
+  filename: string,
+): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(path, SIGN_TTL, { download: filename });
+  if (error || !data) return "";
+  return data.signedUrl;
+}
+
+function safeFilename(first: string, last: string, path: string): string {
+  const ext = path.split(".").pop() || "jpg";
+  const base = `${first}_${last}`.replace(/[^a-zA-Z0-9_-]+/g, "_");
+  return `${base || "photo"}.${ext}`;
 }
 
 function decodeDataUrl(dataUrl: string): {
@@ -76,6 +96,12 @@ export const listPeople = createServerFn({ method: "GET" }).handler(
         lastName: row.last_name,
         email: row.email,
         photoUrl: await signPhoto(supabase, row.photo_path),
+        downloadUrl: await signDownload(
+          supabase,
+          row.photo_path,
+          safeFilename(row.first_name, row.last_name, row.photo_path),
+        ),
+        photoPath: row.photo_path,
         createdAt: row.created_at,
       })),
     );
@@ -99,6 +125,12 @@ export const getPerson = createServerFn({ method: "GET" })
       lastName: row.last_name,
       email: row.email,
       photoUrl: await signPhoto(supabase, row.photo_path),
+      downloadUrl: await signDownload(
+        supabase,
+        row.photo_path,
+        safeFilename(row.first_name, row.last_name, row.photo_path),
+      ),
+      photoPath: row.photo_path,
       createdAt: row.created_at,
     };
   });
