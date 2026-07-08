@@ -151,14 +151,14 @@ const personInputSchema = z.object({
 export const createPerson = createServerFn({ method: "POST" })
   .inputValidator((d) => personInputSchema.parse(d))
   .handler(async ({ data }): Promise<{ id: string }> => {
-    const supabase = serverClient();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { bytes, contentType, ext } = decodeDataUrl(data.photoDataUrl);
     const path = `${crypto.randomUUID()}.${ext}`;
-    const { error: upErr } = await supabase.storage
+    const { error: upErr } = await supabaseAdmin.storage
       .from(BUCKET)
       .upload(path, bytes, { contentType, upsert: false });
     if (upErr) throw new Error(upErr.message);
-    const { data: inserted, error } = await supabase
+    const { data: inserted, error } = await supabaseAdmin
       .from("people")
       .insert({
         first_name: data.firstName,
@@ -169,7 +169,7 @@ export const createPerson = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) {
-      await supabase.storage.from(BUCKET).remove([path]);
+      await supabaseAdmin.storage.from(BUCKET).remove([path]);
       throw new Error(error.message);
     }
     return { id: inserted.id };
@@ -195,8 +195,8 @@ const updateSchema = z.object({
 export const updatePerson = createServerFn({ method: "POST" })
   .inputValidator((d) => updateSchema.parse(d))
   .handler(async ({ data }): Promise<{ ok: true }> => {
-    const supabase = serverClient();
-    const { data: existing, error: fetchErr } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: fetchErr } = await supabaseAdmin
       .from("people")
       .select("photo_path")
       .eq("id", data.id)
@@ -208,13 +208,13 @@ export const updatePerson = createServerFn({ method: "POST" })
     if (data.photoDataUrl) {
       const { bytes, contentType, ext } = decodeDataUrl(data.photoDataUrl);
       newPath = `${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage
+      const { error: upErr } = await supabaseAdmin.storage
         .from(BUCKET)
         .upload(newPath, bytes, { contentType, upsert: false });
       if (upErr) throw new Error(upErr.message);
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("people")
       .update({
         first_name: data.firstName,
@@ -224,12 +224,12 @@ export const updatePerson = createServerFn({ method: "POST" })
       })
       .eq("id", data.id);
     if (error) {
-      if (newPath) await supabase.storage.from(BUCKET).remove([newPath]);
+      if (newPath) await supabaseAdmin.storage.from(BUCKET).remove([newPath]);
       throw new Error(error.message);
     }
 
     if (newPath && existing.photo_path) {
-      await supabase.storage.from(BUCKET).remove([existing.photo_path]);
+      await supabaseAdmin.storage.from(BUCKET).remove([existing.photo_path]);
     }
     return { ok: true };
   });
@@ -237,16 +237,16 @@ export const updatePerson = createServerFn({ method: "POST" })
 export const deletePerson = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data }): Promise<{ ok: true }> => {
-    const supabase = serverClient();
-    const { data: existing } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing } = await supabaseAdmin
       .from("people")
       .select("photo_path")
       .eq("id", data.id)
       .maybeSingle();
-    const { error } = await supabase.from("people").delete().eq("id", data.id);
+    const { error } = await supabaseAdmin.from("people").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     if (existing?.photo_path) {
-      await supabase.storage.from(BUCKET).remove([existing.photo_path]);
+      await supabaseAdmin.storage.from(BUCKET).remove([existing.photo_path]);
     }
     return { ok: true };
   });
