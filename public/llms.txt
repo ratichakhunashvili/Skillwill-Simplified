@@ -1,0 +1,8 @@
+# People Registry
+
+> Kiosk-style app for taking ID-style photos of people and saving them with a name and optional email, then browsing the full directory.
+
+## Pages
+
+- [Capture](/): Take a photo with the camera and register a new person.
+- [People](/people): Browse everyone in the registry as ID-card portraits and edit or remove entries.
