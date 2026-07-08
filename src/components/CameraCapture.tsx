@@ -10,6 +10,8 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
   const streamRef = useRef<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState(false);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
 
   const stop = useCallback(() => {
     if (streamRef.current) {
@@ -19,11 +21,27 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
     setActive(false);
   }, []);
 
-  const start = useCallback(async () => {
+  const refreshDevices = useCallback(async () => {
+    try {
+      const list = await navigator.mediaDevices.enumerateDevices();
+      setDevices(list.filter((d) => d.kind === "videoinput"));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const start = useCallback(async (id?: string) => {
     setError(null);
     try {
+      // stop any existing stream before starting a new one
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } },
+        video: id
+          ? { deviceId: { exact: id }, width: { ideal: 720 }, height: { ideal: 960 } }
+          : { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } },
         audio: false,
       });
       streamRef.current = stream;
@@ -31,7 +49,13 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play().catch(() => {});
       }
+      // pick up the actual device id in use
+      const track = stream.getVideoTracks()[0];
+      const settingsId = track?.getSettings().deviceId;
+      if (settingsId) setDeviceId(settingsId);
       setActive(true);
+      // labels are populated after permission is granted
+      void refreshDevices();
     } catch (e) {
       setError(
         e instanceof Error
@@ -39,10 +63,12 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
           : "Could not access the camera. Please allow camera permission.",
       );
     }
-  }, []);
+  }, [refreshDevices]);
 
   useEffect(() => {
     if (autoStart) void start();
+    const onChange = () => void refreshDevices();
+    navigator.mediaDevices?.addEventListener?.("devicechange", onChange);
     return () => stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -95,11 +121,34 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
           </div>
         )}
       </div>
+      {devices.length > 0 && (
+        <div className="flex w-full max-w-sm flex-col gap-1">
+          <label htmlFor="camera-select" className="text-xs font-medium text-muted-foreground">
+            Camera
+          </label>
+          <select
+            id="camera-select"
+            value={deviceId ?? ""}
+            onChange={(e) => {
+              const id = e.target.value;
+              setDeviceId(id);
+              void start(id);
+            }}
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            {devices.map((d, i) => (
+              <option key={d.deviceId || i} value={d.deviceId}>
+                {d.label || `Camera ${i + 1}`}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="flex gap-2">
         {!active ? (
           <button
             type="button"
-            onClick={start}
+            onClick={() => start(deviceId)}
             className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
           >
             Start camera
