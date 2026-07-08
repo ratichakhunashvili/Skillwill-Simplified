@@ -10,17 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PeopleRouteImport } from './routes/people'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
 const PeopleRoute = PeopleRouteImport.update({
   id: '/people',
   path: '/people',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PeopleIdRoute = PeopleIdRouteImport.update({
@@ -30,31 +24,27 @@ const PeopleIdRoute = PeopleIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/people': typeof PeopleRouteWithChildren
   '/people/$id': typeof PeopleIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/people': typeof PeopleRouteWithChildren
   '/people/$id': typeof PeopleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/people': typeof PeopleRouteWithChildren
   '/people/$id': typeof PeopleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/people' | '/people/$id'
+  fullPaths: '/people' | '/people/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/people' | '/people/$id'
-  id: '__root__' | '/' | '/people' | '/people/$id'
+  to: '/people' | '/people/$id'
+  id: '__root__' | '/people' | '/people/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   PeopleRoute: typeof PeopleRouteWithChildren
 }
 
@@ -65,13 +55,6 @@ declare module '@tanstack/react-router' {
       path: '/people'
       fullPath: '/people'
       preLoaderRoute: typeof PeopleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/people/$id': {
@@ -96,7 +79,6 @@ const PeopleRouteWithChildren =
   PeopleRoute._addFileChildren(PeopleRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   PeopleRoute: PeopleRouteWithChildren,
 }
 export const routeTree = rootRouteImport
