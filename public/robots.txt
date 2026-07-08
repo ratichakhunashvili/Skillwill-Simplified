@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://snap-roster-flow.lovable.app/sitemap.xml
