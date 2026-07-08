@@ -40,13 +40,23 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
       }
       const stream = await navigator.mediaDevices.getUserMedia({
         video: id
-          ? { deviceId: { exact: id }, width: { ideal: 720 }, height: { ideal: 960 } }
+          ? { deviceId: { exact: id } }
           : { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } },
         audio: false,
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Wait for metadata so dimensions are known before play (fixes green frame on virtual cams like DroidCam)
+        await new Promise<void>((resolve) => {
+          const v = videoRef.current!;
+          if (v.readyState >= 1) return resolve();
+          const onLoaded = () => {
+            v.removeEventListener("loadedmetadata", onLoaded);
+            resolve();
+          };
+          v.addEventListener("loadedmetadata", onLoaded);
+        });
         await videoRef.current.play().catch(() => {});
       }
       // pick up the actual device id in use
