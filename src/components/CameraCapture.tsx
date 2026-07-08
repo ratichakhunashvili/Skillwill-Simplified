@@ -40,12 +40,20 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
       }
       const stream = await navigator.mediaDevices.getUserMedia({
         video: id
-          ? { deviceId: { exact: id } }
+          ? {
+              deviceId: { exact: id },
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              frameRate: { ideal: 30 },
+            }
           : { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } },
         audio: false,
       });
       streamRef.current = stream;
       if (videoRef.current) {
+        // Detach first — reusing the same <video> element with a new stream
+        // can produce a green frame on virtual cameras (DroidCam, OBS).
+        videoRef.current.srcObject = null;
         videoRef.current.srcObject = stream;
         // Wait for metadata so dimensions are known before play (fixes green frame on virtual cams like DroidCam)
         await new Promise<void>((resolve) => {
@@ -58,6 +66,13 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
           v.addEventListener("loadedmetadata", onLoaded);
         });
         await videoRef.current.play().catch(() => {});
+        // Some virtual cams deliver a green first frame until the decoder
+        // primes. If the video hasn't produced pixels yet, nudge it.
+        await new Promise((r) => setTimeout(r, 150));
+        if (videoRef.current && videoRef.current.videoWidth === 0) {
+          videoRef.current.load();
+          await videoRef.current.play().catch(() => {});
+        }
       }
       // pick up the actual device id in use
       const track = stream.getVideoTracks()[0];
