@@ -84,15 +84,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Kiosk-style people registry: snap a portrait, add name, save, repeat. All entries persist and can be edited.",
       },
-      { property: "og:title", content: "People Registry" },
+      { property: "og:title", content: "People Registry — Capture & Save" },
       {
         property: "og:description",
         content:
-          "Snap a portrait, add name, save, repeat. Browse and edit every entry.",
+          "Kiosk-style people registry: snap a portrait, add name, save, repeat. All entries persist and can be edited.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "People Registry — Capture & Save" },
+      { name: "twitter:description", content: "Kiosk-style people registry: snap a portrait, add name, save, repeat. All entries persist and can be edited." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/010842c9-0ccb-40ed-a6aa-b6b99b9513cd/id-preview-a58b2cb0--06ee7f44-4d90-4b28-a561-cd24847ac63b.lovable.app-1783515674905.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/010842c9-0ccb-40ed-a6aa-b6b99b9513cd/id-preview-a58b2cb0--06ee7f44-4d90-4b28-a561-cd24847ac63b.lovable.app-1783515674905.png" },
     ],
     links: [
       {
