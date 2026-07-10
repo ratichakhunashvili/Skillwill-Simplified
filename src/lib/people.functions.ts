@@ -152,12 +152,39 @@ export const createPerson = createServerFn({ method: "POST" })
   .inputValidator((d) => personInputSchema.parse(d))
   .handler(async ({ data }): Promise<{ id: string }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { uploadPhotoToDrive, appendPersonRow, safeDriveFilename } =
+      await import("./google.server");
     const { bytes, contentType, ext } = decodeDataUrl(data.photoDataUrl);
     const path = `${crypto.randomUUID()}.${ext}`;
     const { error: upErr } = await supabaseAdmin.storage
       .from(BUCKET)
       .upload(path, bytes, { contentType, upsert: false });
     if (upErr) throw new Error(upErr.message);
+
+    // Determine sequential person number (based on current row count).
+    const { count: existingCount } = await supabaseAdmin
+      .from("people")
+      .select("id", { count: "exact", head: true });
+    const number = String((existingCount ?? 0) + 1).padStart(4, "0");
+
+    // Upload photo to Google Drive + append row to Sheet.
+    let driveLink = "";
+    try {
+      const filename = safeDriveFilename(number, data.firstName, data.lastName, ext);
+      const uploaded = await uploadPhotoToDrive({ bytes, contentType, filename });
+      driveLink = uploaded.webViewLink;
+      await appendPersonRow({
+        number,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email ?? "",
+        photoLink: driveLink,
+      });
+    } catch (e) {
+      await supabaseAdmin.storage.from(BUCKET).remove([path]);
+      throw e instanceof Error ? e : new Error("Google Drive sync failed");
+    }
+
     const { data: inserted, error } = await supabaseAdmin
       .from("people")
       .insert({
