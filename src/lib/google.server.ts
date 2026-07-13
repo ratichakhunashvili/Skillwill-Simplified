@@ -4,8 +4,8 @@
 const DRIVE_GW = "https://connector-gateway.lovable.dev/google_drive";
 const SHEETS_GW = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
-export const DRIVE_PHOTOS_FOLDER_ID = "1617-W3upB2rTg6yA1PKjYAAltqdeH-2N"; // სურათები
-export const SHEET_ID = "1H_qL3UsZeZTj9JB4e-oSAfvc9Onhlge3cFNxxVP4B1w"; // სახელი გვარები
+export const DRIVE_PHOTOS_FOLDER_ID = "1Y5fIoaZqFwPGsTqhl7yMU0jEd5rs4j5u"; // ფოტოები
+export const SHEET_ID = "1mcmSQMidz4Ad0HxeS5N4bKlQ7e6FKjxjXax7wAileYM"; // სახელები, გვარები.
 export const SHEET_TAB = "Sheet1";
 
 function driveHeaders(): HeadersInit {
