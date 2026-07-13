@@ -12,6 +12,7 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
   const [active, setActive] = useState(false);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
+  const STORAGE_KEY = "cameraCapture.deviceId";
 
   const stop = useCallback(() => {
     if (streamRef.current) {
@@ -77,7 +78,14 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
       // pick up the actual device id in use
       const track = stream.getVideoTracks()[0];
       const settingsId = track?.getSettings().deviceId;
-      if (settingsId) setDeviceId(settingsId);
+      if (settingsId) {
+        setDeviceId(settingsId);
+        try {
+          localStorage.setItem(STORAGE_KEY, settingsId);
+        } catch {
+          /* ignore */
+        }
+      }
       setActive(true);
       // labels are populated after permission is granted
       void refreshDevices();
@@ -91,7 +99,15 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
   }, [refreshDevices]);
 
   useEffect(() => {
-    if (autoStart) void start();
+    if (autoStart) {
+      let saved: string | undefined;
+      try {
+        saved = localStorage.getItem(STORAGE_KEY) ?? undefined;
+      } catch {
+        /* ignore */
+      }
+      void start(saved);
+    }
     const onChange = () => void refreshDevices();
     navigator.mediaDevices?.addEventListener?.("devicechange", onChange);
     return () => stop();
@@ -157,6 +173,11 @@ export function CameraCapture({ onCapture, autoStart = true }: Props) {
             onChange={(e) => {
               const id = e.target.value;
               setDeviceId(id);
+              try {
+                localStorage.setItem(STORAGE_KEY, id);
+              } catch {
+                /* ignore */
+              }
               void start(id);
             }}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
