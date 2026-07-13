@@ -66,17 +66,29 @@ export async function uploadPhotoToDrive(opts: {
   return res.json();
 }
 
+// Cache header-ensure across the server process lifetime so we don't
+// hit the Sheets read quota on every append.
+let headersEnsured = false;
 async function ensureSheetHeaders(): Promise<void> {
+  if (headersEnsured) return;
   const res = await fetch(
     `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:F1`,
     { headers: sheetsHeaders() },
   );
   if (!res.ok) {
+    // On quota or transient errors, skip header bootstrap and just append.
+    if (res.status === 429) {
+      headersEnsured = true;
+      return;
+    }
     const t = await res.text();
     throw new Error(`Sheets read failed [${res.status}]: ${t}`);
   }
   const data = (await res.json()) as { values?: string[][] };
-  if (data.values && data.values.length > 0) return;
+  if (data.values && data.values.length > 0) {
+    headersEnsured = true;
+    return;
+  }
   const put = await fetch(
     `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:F1?valueInputOption=USER_ENTERED`,
     {
@@ -91,6 +103,7 @@ async function ensureSheetHeaders(): Promise<void> {
     const t = await put.text();
     throw new Error(`Sheets header write failed [${put.status}]: ${t}`);
   }
+  headersEnsured = true;
 }
 
 export async function appendPersonRow(row: {
