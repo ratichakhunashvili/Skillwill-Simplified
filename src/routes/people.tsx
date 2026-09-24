@@ -115,6 +115,11 @@ function PeoplePage() {
                   <div className="text-sm font-semibold leading-tight">
                     {p.firstName} {p.lastName}
                   </div>
+                  {p.program && (
+                    <div className="text-xs font-medium text-primary">
+                      {p.program}
+                    </div>
+                  )}
                   {p.email && (
                     <div className="truncate text-xs text-muted-foreground">
                       {p.email}
@@ -170,6 +175,7 @@ function EditDialog({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [program, setProgram] = useState("");
   const [newPhoto, setNewPhoto] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraKey, setCameraKey] = useState(0);
