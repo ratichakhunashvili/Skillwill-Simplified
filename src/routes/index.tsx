@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { CameraCapture } from "@/components/CameraCapture";
 import { createPerson } from "@/lib/people.functions";
+import { PROGRAMS, type Program } from "@/lib/programs";
 
 export const Route = createFileRoute("/")({
   component: CapturePage,
@@ -16,6 +17,7 @@ function CapturePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [program, setProgram] = useState("");
   const [cameraKey, setCameraKey] = useState(0);
   const router = useRouter();
 
@@ -25,6 +27,7 @@ function CapturePage() {
       firstName: string;
       lastName: string;
       email: string;
+      program?: Program;
       photoDataUrl: string;
     }) => createFn({ data }),
     onSuccess: () => {
@@ -51,6 +54,7 @@ function CapturePage() {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim(),
+      ...(program ? { program: program as Program } : {}),
       photoDataUrl: photo,
     });
   };
@@ -139,6 +143,24 @@ function CapturePage() {
                 maxLength={255}
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="program" className="text-sm font-medium">
+                პროგრამა <span className="text-muted-foreground">(optional)</span>
+              </label>
+              <select
+                id="program"
+                value={program}
+                onChange={(e) => setProgram(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">— აირჩიე პროგრამა —</option>
+                {PROGRAMS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
             </div>
             <button
               type="submit"

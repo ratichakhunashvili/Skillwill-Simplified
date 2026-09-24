@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { PROGRAMS } from "./programs";
 
 function serverClient() {
   return createClient<Database>(
@@ -25,6 +26,7 @@ export type PersonDTO = {
   firstName: string;
   lastName: string;
   email: string | null;
+  program: string | null;
   photoUrl: string;
   downloadUrl: string;
   photoPath: string;
@@ -86,7 +88,7 @@ export const listPeople = createServerFn({ method: "GET" }).handler(
     const supabase = serverClient();
     const { data, error } = await supabase
       .from("people")
-      .select("id, first_name, last_name, email, photo_path, created_at")
+      .select("id, first_name, last_name, email, program, photo_path, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return Promise.all(
@@ -95,6 +97,7 @@ export const listPeople = createServerFn({ method: "GET" }).handler(
         firstName: row.first_name,
         lastName: row.last_name,
         email: row.email,
+        program: row.program,
         photoUrl: await signPhoto(supabase, row.photo_path),
         downloadUrl: await signDownload(
           supabase,
@@ -114,7 +117,7 @@ export const getPerson = createServerFn({ method: "GET" })
     const supabase = serverClient();
     const { data: row, error } = await supabase
       .from("people")
-      .select("id, first_name, last_name, email, photo_path, created_at")
+      .select("id, first_name, last_name, email, program, photo_path, created_at")
       .eq("id", data.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -124,6 +127,7 @@ export const getPerson = createServerFn({ method: "GET" })
       firstName: row.first_name,
       lastName: row.last_name,
       email: row.email,
+      program: row.program,
       photoUrl: await signPhoto(supabase, row.photo_path),
       downloadUrl: await signDownload(
         supabase,
@@ -135,6 +139,8 @@ export const getPerson = createServerFn({ method: "GET" })
     };
   });
 
+const programSchema = z.enum(PROGRAMS).optional();
+
 const personInputSchema = z.object({
   firstName: z.string().trim().min(1).max(100),
   lastName: z.string().trim().min(1).max(100),
@@ -145,6 +151,7 @@ const personInputSchema = z.object({
     .email()
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  program: programSchema,
   photoDataUrl: z.string().startsWith("data:image/"),
 });
 
@@ -178,6 +185,7 @@ export const createPerson = createServerFn({ method: "POST" })
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email ?? "",
+        program: data.program ?? "",
         photoLink: driveLink,
       });
     } catch (e) {
@@ -191,6 +199,7 @@ export const createPerson = createServerFn({ method: "POST" })
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email ?? null,
+        program: data.program ?? null,
         photo_path: path,
       })
       .select("id")
@@ -213,6 +222,7 @@ const updateSchema = z.object({
     .email()
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  program: programSchema,
   photoDataUrl: z
     .string()
     .startsWith("data:image/")
@@ -247,6 +257,7 @@ export const updatePerson = createServerFn({ method: "POST" })
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email ?? null,
+        program: data.program ?? null,
         ...(newPath ? { photo_path: newPath } : {}),
       })
       .eq("id", data.id);

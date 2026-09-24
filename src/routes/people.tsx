@@ -19,6 +19,7 @@ import {
   updatePerson,
   type PersonDTO,
 } from "@/lib/people.functions";
+import { PROGRAMS, type Program } from "@/lib/programs";
 
 const peopleQuery = queryOptions({
   queryKey: ["people"],
@@ -115,6 +116,11 @@ function PeoplePage() {
                   <div className="text-sm font-semibold leading-tight">
                     {p.firstName} {p.lastName}
                   </div>
+                  {p.program && (
+                    <div className="text-xs font-medium text-primary">
+                      {p.program}
+                    </div>
+                  )}
                   {p.email && (
                     <div className="truncate text-xs text-muted-foreground">
                       {p.email}
@@ -170,6 +176,7 @@ function EditDialog({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [program, setProgram] = useState("");
   const [newPhoto, setNewPhoto] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraKey, setCameraKey] = useState(0);
@@ -184,6 +191,7 @@ function EditDialog({
     setFirstName(person.firstName);
     setLastName(person.lastName);
     setEmail(person.email ?? "");
+    setProgram(person.program ?? "");
     setNewPhoto(null);
     setShowCamera(false);
   }
@@ -200,6 +208,7 @@ function EditDialog({
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.trim(),
+          ...(program ? { program: program as Program } : {}),
           ...(newPhoto ? { photoDataUrl: newPhoto } : {}),
         },
       });
@@ -315,6 +324,25 @@ function EditDialog({
                   maxLength={255}
                   className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                 />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="edit-program" className="text-sm font-medium">
+                  პროგრამა{" "}
+                  <span className="text-muted-foreground">(optional)</span>
+                </label>
+                <select
+                  id="edit-program"
+                  value={program}
+                  onChange={(e) => setProgram(e.target.value)}
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">— აირჩიე პროგრამა —</option>
+                  {PROGRAMS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
