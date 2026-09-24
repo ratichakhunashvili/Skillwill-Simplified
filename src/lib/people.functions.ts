@@ -185,6 +185,7 @@ export const createPerson = createServerFn({ method: "POST" })
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email ?? "",
+        program: data.program ?? "",
         photoLink: driveLink,
       });
     } catch (e) {
@@ -198,6 +199,7 @@ export const createPerson = createServerFn({ method: "POST" })
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email ?? null,
+        program: data.program ?? null,
         photo_path: path,
       })
       .select("id")
