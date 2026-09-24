@@ -87,7 +87,7 @@ export const listPeople = createServerFn({ method: "GET" }).handler(
     const supabase = serverClient();
     const { data, error } = await supabase
       .from("people")
-      .select("id, first_name, last_name, email, photo_path, created_at")
+      .select("id, first_name, last_name, email, program, photo_path, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return Promise.all(
@@ -96,6 +96,7 @@ export const listPeople = createServerFn({ method: "GET" }).handler(
         firstName: row.first_name,
         lastName: row.last_name,
         email: row.email,
+        program: row.program,
         photoUrl: await signPhoto(supabase, row.photo_path),
         downloadUrl: await signDownload(
           supabase,
@@ -115,7 +116,7 @@ export const getPerson = createServerFn({ method: "GET" })
     const supabase = serverClient();
     const { data: row, error } = await supabase
       .from("people")
-      .select("id, first_name, last_name, email, photo_path, created_at")
+      .select("id, first_name, last_name, email, program, photo_path, created_at")
       .eq("id", data.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -125,6 +126,7 @@ export const getPerson = createServerFn({ method: "GET" })
       firstName: row.first_name,
       lastName: row.last_name,
       email: row.email,
+      program: row.program,
       photoUrl: await signPhoto(supabase, row.photo_path),
       downloadUrl: await signDownload(
         supabase,
