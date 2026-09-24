@@ -144,6 +144,24 @@ function CapturePage() {
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="program" className="text-sm font-medium">
+                პროგრამა <span className="text-muted-foreground">(optional)</span>
+              </label>
+              <select
+                id="program"
+                value={program}
+                onChange={(e) => setProgram(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">— აირჩიე პროგრამა —</option>
+                {PROGRAMS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
               type="submit"
               disabled={!canSave || mutation.isPending}
