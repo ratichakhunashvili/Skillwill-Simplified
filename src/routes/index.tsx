@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { CameraCapture } from "@/components/CameraCapture";
 import { createPerson } from "@/lib/people.functions";
-import { PROGRAMS } from "@/lib/programs";
+import { PROGRAMS, type Program } from "@/lib/programs";
 
 export const Route = createFileRoute("/")({
   component: CapturePage,
@@ -27,7 +27,7 @@ function CapturePage() {
       firstName: string;
       lastName: string;
       email: string;
-      program?: string;
+      program?: Program;
       photoDataUrl: string;
     }) => createFn({ data }),
     onSuccess: () => {
@@ -54,7 +54,7 @@ function CapturePage() {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim(),
-      ...(program ? { program } : {}),
+      ...(program ? { program: program as Program } : {}),
       photoDataUrl: photo,
     });
   };
