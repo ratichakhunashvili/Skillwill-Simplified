@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { PROGRAMS } from "./programs";
 
 function serverClient() {
   return createClient<Database>(
@@ -138,6 +139,8 @@ export const getPerson = createServerFn({ method: "GET" })
     };
   });
 
+const programSchema = z.enum(PROGRAMS).optional();
+
 const personInputSchema = z.object({
   firstName: z.string().trim().min(1).max(100),
   lastName: z.string().trim().min(1).max(100),
@@ -148,6 +151,7 @@ const personInputSchema = z.object({
     .email()
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  program: programSchema,
   photoDataUrl: z.string().startsWith("data:image/"),
 });
 
