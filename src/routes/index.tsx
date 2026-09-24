@@ -27,6 +27,7 @@ function CapturePage() {
       firstName: string;
       lastName: string;
       email: string;
+      program?: string;
       photoDataUrl: string;
     }) => createFn({ data }),
     onSuccess: () => {
@@ -53,6 +54,7 @@ function CapturePage() {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim(),
+      ...(program ? { program } : {}),
       photoDataUrl: photo,
     });
   };
