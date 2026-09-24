@@ -72,7 +72,7 @@ let headersEnsured = false;
 async function ensureSheetHeaders(): Promise<void> {
   if (headersEnsured) return;
   const res = await fetch(
-    `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:F1`,
+    `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:G1`,
     { headers: sheetsHeaders() },
   );
   if (!res.ok) {
@@ -90,12 +90,12 @@ async function ensureSheetHeaders(): Promise<void> {
     return;
   }
   const put = await fetch(
-    `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:F1?valueInputOption=USER_ENTERED`,
+    `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:G1?valueInputOption=USER_ENTERED`,
     {
       method: "PUT",
       headers: { ...sheetsHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({
-        values: [["#", "სახელი", "გვარი", "Email", "თარიღი", "ფოტოს ლინკი"]],
+        values: [["#", "სახელი", "გვარი", "Email", "თარიღი", "ფოტოს ლინკი", "პროგრამა"]],
       }),
     },
   );
@@ -111,11 +111,12 @@ export async function appendPersonRow(row: {
   firstName: string;
   lastName: string;
   email: string;
+  program: string;
   photoLink: string;
 }): Promise<void> {
   await ensureSheetHeaders();
   const res = await fetch(
-    `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:F:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+    `${SHEETS_GW}/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:G:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
     {
       method: "POST",
       headers: { ...sheetsHeaders(), "Content-Type": "application/json" },
@@ -127,6 +128,7 @@ export async function appendPersonRow(row: {
           row.email,
           new Date().toISOString(),
           row.photoLink,
+          row.program,
         ]],
       }),
     },
