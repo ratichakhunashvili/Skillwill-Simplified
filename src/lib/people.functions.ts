@@ -222,6 +222,7 @@ const updateSchema = z.object({
     .email()
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  program: programSchema,
   photoDataUrl: z
     .string()
     .startsWith("data:image/")
@@ -256,6 +257,7 @@ export const updatePerson = createServerFn({ method: "POST" })
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email ?? null,
+        program: data.program ?? null,
         ...(newPath ? { photo_path: newPath } : {}),
       })
       .eq("id", data.id);
