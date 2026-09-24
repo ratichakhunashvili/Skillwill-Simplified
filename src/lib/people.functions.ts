@@ -25,6 +25,7 @@ export type PersonDTO = {
   firstName: string;
   lastName: string;
   email: string | null;
+  program: string | null;
   photoUrl: string;
   downloadUrl: string;
   photoPath: string;
