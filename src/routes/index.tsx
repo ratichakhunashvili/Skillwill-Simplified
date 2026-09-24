@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { CameraCapture } from "@/components/CameraCapture";
 import { createPerson } from "@/lib/people.functions";
+import { PROGRAMS } from "@/lib/programs";
 
 export const Route = createFileRoute("/")({
   component: CapturePage,
@@ -16,6 +17,7 @@ function CapturePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [program, setProgram] = useState("");
   const [cameraKey, setCameraKey] = useState(0);
   const router = useRouter();
 
